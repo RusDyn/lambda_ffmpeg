@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "types": ["node"],
+    "lib": ["es2019", "dom"],
+    "rootDir": ".",
+    "outDir": "build"
+  },
+  "include": [
+    "main.ts"
+  ],
+  "exclude": [
+    "node_modules/**/*"
+  ]
+}
