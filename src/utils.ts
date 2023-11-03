@@ -2,8 +2,10 @@ import {S3} from '@aws-sdk/client-s3';
 import {DynamoDBClient} from '@aws-sdk/client-dynamodb';
 import * as os from 'os';
 import * as fs from 'fs';
-import {S3Event, S3Handler} from 'aws-lambda';
+import {S3Event} from 'aws-lambda';
 import path = require('path');
+import { Readable } from 'stream';
+import axios from 'axios';
 
 type env = {
     PROCESSED_BUCKET: string;
@@ -30,7 +32,9 @@ type env = {
   
   export const tempDir = os.tmpdir();
   export const download = path.join(tempDir, 'download');
-  console.log(download);
+  console.log('Download dir:', download);
+  const currentPath = process.cwd();
+console.log("Current working directory:", currentPath);
 
   export const outputDir = path.join(tempDir, 'outputs');
 
@@ -80,6 +84,36 @@ export function removeFile(localFilePath: string) {
   console.log(`Deleting ${localFilePath}`);
 
   fs.unlinkSync(localFilePath);
+}
+
+export async function getReadableStream(url) {
+  if (
+    url.startsWith('https://') ||
+    url.startsWith('http://') ||
+    url.startsWith('ftp://')
+  ) {
+    const response = await axios.get(url, {
+      responseType: 'stream',
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+      },
+    });
+
+    return response.data;
+  } else {
+    const fileStream = fs.createReadStream(url);
+    return fileStream;
+  }
+}
+
+export function streamToBuffer(stream: Readable): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    stream.on('data', (chunk) => chunks.push(chunk));
+    stream.on('end', () => resolve(Buffer.concat(chunks)));
+    stream.on('error', reject);
+  });
 }
 
   

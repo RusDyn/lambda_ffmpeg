@@ -1,24 +1,57 @@
-
-import * as path from 'path';
 import * as util from 'util';
 
-import {
-  checkM3u, getFileLocation, outputDir, removeFile, } from './src/utils'
+import {removeFile, } from './src/utils'
 
-import {S3Handler} from 'aws-lambda';
+
 import {downloadFile} from './src/downloadFile'
-import {confirmUpload, uploadFiles} from './src/uploadFIle'
-import {ffprobe} from './src/ffprobe'
-import {ffmpeg} from './src/ffmpeg'
+import {confirmUpload, uploadFile} from './src/uploadFIle'
 import {addHashForNewFile} from './src/addHashForNewFile'
 
-
+import {generateSubtitles} from './src/generateSubtitles'
+import {mergeStreams} from './src/mergeStreams'
+import { ffmpeg_run } from './src/ffmpeg';
 
 /**
  * The Lambda Function handler
  */
-export const handler: S3Handler = async event => {
+export const handler = async event => {
   console.log(util.inspect(event, {depth: 10}));
+
+  await ffmpeg_run(['-version']);
+  
+  const words = event.words;
+  if (!words || words.length === 0) {
+    throw new Error('No words is provided');
+  }
+  const audio = event.audio;
+  if (!audio || !audio.bucket || !audio.name) {
+    throw new Error('No audio is provided. Should be {bucket: string, name: string}');
+  }
+  const video = event.video;
+  if (!video || !video.bucket || !video.name) {
+    throw new Error('No video is provided. Should be {bucket: string, name: string}');
+  }
+  const duration = event.duration || 120;
+  
+  const audioFileName = await downloadFile(audio.bucket, audio.name);
+  const videoFileName = await downloadFile(video.bucket, video.name);
+  const subtitlesFile = generateSubtitles(words, duration);
+  
+  const outName = await mergeStreams(audioFileName, videoFileName, subtitlesFile, duration);
+
+  console.log('Uploading file to S3 from', outName)
+  await uploadFile('out', outName)
+  
+  console.log('Removing temp files')
+  await removeFile(subtitlesFile);
+  await removeFile(audioFileName);
+  await removeFile(videoFileName);
+
+  //await addHashForNewFile(path.join(outputDir, 'out.mp4'), sourceLocation.key);
+  //await Promise.all([uploadFiles(keyPrefix)]);
+
+  
+  /*
   const sourceLocation = getFileLocation(event);
   const keyPrefix = sourceLocation.key.replace(/\.[^/.]+$/, '');
 
@@ -31,5 +64,5 @@ export const handler: S3Handler = async event => {
   await ffmpeg(keyPrefix);
   removeFile(name);
   await addHashForNewFile(path.join(outputDir, 'out.mp4'), sourceLocation.key);
-  await Promise.all([uploadFiles(keyPrefix)]);
+  await Promise.all([uploadFiles(keyPrefix)]);*/
 };

@@ -2,14 +2,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
-import {FFMPEG_ARGS, HASHES_TABLE, MIME_TYPES, PROCESSED_BUCKET, VIDEO_MAX_DURATION, checkM3u, docClient, getExtension, 
-    getFileLocation, mimeTypes, outputDir, removeFile, s3, tempDir, videoMaxDuration} from './utils'
+import {HASHES_TABLE, PROCESSED_BUCKET, docClient, getExtension, 
+    mimeTypes, outputDir, removeFile, s3 } from './utils'
 
 import {
   UpdateCommand,
   UpdateCommandInput,
-  PutCommand,
-  PutCommandInput,
 } from '@aws-sdk/lib-dynamodb';
 
 
@@ -20,15 +18,17 @@ import {
 export async function uploadFile(keyPrefix: string, filename: string) {
     const extension = getExtension(filename);
     const mimeType = mimeTypes[extension];
-    const fileFullPath = path.join(outputDir, filename);
-    const rmFiles = [fileFullPath];
+    const rmFiles = [filename];
   
-    console.log(`Uploading ${mimeType}`);
+    const Bucket = PROCESSED_BUCKET;
+    const Key = `${keyPrefix}.${extension}`;
+    const Body = fs.readFileSync(filename);
+    console.log(`Uploading ${mimeType} - ${filename} to ${Bucket}/${Key}`);
   
     await s3.putObject({
-      Bucket: PROCESSED_BUCKET,
-      Key: `${keyPrefix}.${extension}`,
-      Body: fs.readFileSync(fileFullPath),
+      Bucket,
+      Key,
+      Body, 
       ContentType: mimeType,
       CacheControl: 'max-age=31536000',
     });
