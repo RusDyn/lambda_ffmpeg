@@ -17,7 +17,7 @@ import { ffmpeg_run } from './src/ffmpeg';
 export const handler = async event => {
   console.log(util.inspect(event, {depth: 10}));
 
-  await ffmpeg_run(['-version']);
+  //await ffmpeg_run(['-version']);
   
   const words = event.words;
   if (!words || words.length === 0) {
@@ -40,7 +40,9 @@ export const handler = async event => {
   const outName = await mergeStreams(audioFileName, videoFileName, subtitlesFile, duration);
 
   console.log('Uploading file to S3 from', outName)
-  await uploadFile('out', outName)
+  const randomName = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  const fileName = `out_${randomName}`;
+  await uploadFile(fileName, outName)
   
   console.log('Removing temp files')
   await removeFile(subtitlesFile);
@@ -65,4 +67,11 @@ export const handler = async event => {
   removeFile(name);
   await addHashForNewFile(path.join(outputDir, 'out.mp4'), sourceLocation.key);
   await Promise.all([uploadFiles(keyPrefix)]);*/
+  return {
+    statusCode: 200,
+    body: JSON.stringify({
+      message: 'success',
+      name: fileName,
+    }),
+  }
 };

@@ -15,7 +15,8 @@ export async function mergeStreams(
       const audioBuffer = await streamToBuffer(audio);
       const videoBuffer = await streamToBuffer(video);
   
-      const fileFullPath = path.join(outputDir,'out.mp4');
+      const randomName = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      const fileFullPath = path.join(outputDir,`out_${randomName}.mp4`);
 
       // Write buffers to temporary files
       const audioFilePath = path.join(tempDir, 'temp_audio_input');
@@ -27,7 +28,7 @@ export async function mergeStreams(
       const subtitlesArgs = subsFile ? [`-vf`, `ass=${subsFile}`] : [];
       const args = [
         '-loglevel',
-        'error',
+        '32',
         '-hide_banner',
         '-i',
         audioFilePath,

@@ -22,7 +22,7 @@ const event = {
       "word": "world"
     }
   ],
-  "duration": 10
+  "duration": 1900
 };
 
 handler(event);
