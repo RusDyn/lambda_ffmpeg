@@ -52,7 +52,6 @@ export const handler = async event => {
   //await addHashForNewFile(path.join(outputDir, 'out.mp4'), sourceLocation.key);
   //await Promise.all([uploadFiles(keyPrefix)]);
 
-  
   /*
   const sourceLocation = getFileLocation(event);
   const keyPrefix = sourceLocation.key.replace(/\.[^/.]+$/, '');
