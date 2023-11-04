@@ -43,7 +43,10 @@ export async function mergeStreams(
         '-c:v',
         'libx264',
         '-c:a',
-        'aac',
+        'copy',
+        '-preset', 'veryfast', 
+        '-threads', 
+        'auto',
         '-t',
         duration.toString(), // specifies the duration; FFmpeg will stop processing after this duration
         fileFullPath,
