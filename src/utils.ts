@@ -7,6 +7,13 @@ import path = require('path');
 import { Readable } from 'stream';
 import axios from 'axios';
 
+
+import * as util from 'node:util';
+import { exec, execFile } from 'node:child_process';
+
+export const execAsync = util.promisify(exec);
+export const execFileAsync = util.promisify(execFile);
+
 type env = {
     PROCESSED_BUCKET: string;
     FFMPEG_ARGS: string;
@@ -25,6 +32,9 @@ type env = {
     HASHES_TABLE,
   } = process.env as env;
   
+  if (!PROCESSED_BUCKET) {
+    throw new Error('PROCESSED_BUCKET is not defined');
+  }
   const opts = ENDPOINT_URL ? {endpoint: ENDPOINT_URL} : {};
   
   export const s3 = new S3(opts);
@@ -40,6 +50,26 @@ console.log("Current working directory:", currentPath);
 
 if (!fs.existsSync(outputDir)) {
   fs.mkdirSync(outputDir);
+}
+
+export const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+let ffmpegPath: string = undefined;
+
+export function getFFmpegPath() {
+  if (!ffmpegPath) {
+    const fp = path.join(process.cwd(), 'bin/ffmpeg');
+    if (process.env.FFMPEG_PATH) {
+      ffmpegPath = process.env.FFMPEG_PATH;
+    }
+    else if (fs.existsSync(fp)) {
+      ffmpegPath = fp;
+    }
+    else {
+      ffmpegPath = 'ffmpeg';
+    }
+  }
+  return ffmpegPath;
 }
 
 export const mimeTypes = JSON.parse(MIME_TYPES);
@@ -86,6 +116,7 @@ export function removeFile(localFilePath: string) {
   fs.unlinkSync(localFilePath);
 }
 
+
 export async function getReadableStream(url) {
   if (
     url.startsWith('https://') ||
@@ -115,5 +146,4 @@ export function streamToBuffer(stream: Readable): Promise<Buffer> {
     stream.on('error', reject);
   });
 }
-
   

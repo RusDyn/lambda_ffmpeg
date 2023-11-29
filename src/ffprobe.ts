@@ -9,11 +9,10 @@ import {tempDir, videoMaxDuration} from './utils'
 /**
  * Runs FFprobe and ensures that the input file has a valid stream and meets the maximum duration threshold.
  */
-export async function ffprobe(): Promise<void> {
-    console.log('Starting FFprobe');
+export async function ffprobe(path) {
+    //console.log('Starting FFprobe');
   
-    return new Promise((resolve, reject) => {
-      const args: string[] = [
+    const args: string[] = [
         '-v',
         'quiet',
         '-print_format',
@@ -21,7 +20,7 @@ export async function ffprobe(): Promise<void> {
         '-show_format',
         '-show_streams',
         '-i',
-        'download',
+        path
       ];
       const opts = {
         cwd: tempDir,
@@ -31,10 +30,11 @@ export async function ffprobe(): Promise<void> {
   
       const stdout = output.toString();
   
-      console.log(stdout);
+      //console.log(stdout);
   
       const {streams, format} = JSON.parse(stdout);
   
+      /*
       const hasVideoStream = streams.some(
         ({codec_type, duration}: {codec_type: string; duration: number}) =>
           codec_type === 'video' &&
@@ -46,6 +46,7 @@ export async function ffprobe(): Promise<void> {
       } else {
         console.log('Valid video stream found. FFprobe finished.');
         resolve();
-      }
-    });
+      }*/
+
+      return {streams, format};
   }

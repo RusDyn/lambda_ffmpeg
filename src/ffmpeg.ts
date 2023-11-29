@@ -1,40 +1,13 @@
-import {execFile} from 'child_process';
 
-import {FFMPEG_ARGS, outputDir} from './utils'
-import * as path from 'path';
-import * as fs from 'fs';
-export const execFileAsync = (file: string, args: string[], opts: any) => {
-    return new Promise((resolve, reject) => {
-      execFile(file, args, opts, (err, stdout, stderr) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve({stdout, stderr});
-        }
-      });
-    });
-  }
-
-let ffmpegPath = undefined;
+import {FFMPEG_ARGS, execFileAsync, getFFmpegPath, outputDir} from './utils'
 
 export async function ffmpeg_run(args: string[]){
     
     const opts = {cwd: outputDir}
-    if (!ffmpegPath) {
-      const fp = path.join(process.cwd(), 'bin/ffmpeg');
-      if (process.env.FFMPEG_PATH) {
-        ffmpegPath = process.env.FFMPEG_PATH;
-      }
-      else if (fs.existsSync(fp)) {
-        ffmpegPath = fp;
-      }
-      else {
-        ffmpegPath = 'ffmpeg';
-      }
-    }
+
     try {
-      const result = await execFileAsync(ffmpegPath, args, opts);
-      console.log(result);
+      const result = await execFileAsync(getFFmpegPath(), args, opts);
+      //console.log(result);
       //process.exit(7);
     
     }
