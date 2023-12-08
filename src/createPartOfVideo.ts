@@ -66,7 +66,7 @@ export async function createPartOfVideo(
     '-to', fe,
     '-i',
     url,
-    ...changeFpsArgs,
+    ...codecArgs,
     '-an',
     '-force_key_frames', `${fs},${fe}`,
     randomFileName2,
