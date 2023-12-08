@@ -156,22 +156,15 @@ function convertToAss(subtitlesArray: Subtitle[], styles: SubtitleStyle[]) {
 
   let counter = 1;
 
+  const convertToTime = (timeSeconds: number) => {
+    return new Date(timeSeconds * 1000).toISOString().substr(11, 8) +
+      '.' +
+      new Date(timeSeconds * 1000).toISOString().substr(20, 2);
+  }
   subtitlesArray.forEach((subtitle) => {
-    const startSeconds = subtitle.start;
-    const endSeconds = subtitle.end; // Assumes default 2 seconds duration if no next start time is available
-
-    // Convert times to ASS format (H:MM:SS.MM)
-    const startTime =
-      new Date(startSeconds * 1000).toISOString().substr(11, 8) +
-      '.' +
-      new Date(startSeconds * 1000).toISOString().substr(20, 2);
-    const endTime =
-      new Date(endSeconds * 1000).toISOString().substr(11, 8) +
-      '.' +
-      new Date(endSeconds * 1000).toISOString().substr(20, 2);
-
+    const startTime = convertToTime(subtitle.start);
+    const endTime = convertToTime(subtitle.end);
     // Convert color tags and construct the text
-
     // Add text and time to ASS content
     assContent += `Dialogue: 0,${startTime},${endTime},Item${subtitle.style || 1},,0,0,0,,${subtitle.text}\n`;
     counter++;
