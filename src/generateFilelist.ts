@@ -50,7 +50,9 @@ export async function generateFilesForList(items: Array<{ url; start; end }>) {
 
     const url = await createPartOfVideo(path, start, end);
     items[item.index].url = url;
-    fs.unlinkSync(path);
+    if (path !== url) {
+      fs.unlinkSync(path);
+    }
   };
   for (const item of toCreate) {
     await makePart(item);
@@ -80,19 +82,21 @@ export async function writeFilelist(items: Array<{ url; start; end }>) {
   // Create a temporary file to store the list of input files
   const fileListPath = path.join(tempDir, 'filelist.txt');
   const resultItems: string[] = [];
+  let totalDuration = 0;
+
+  const round = (num) => Math.round(num * 100) / 100;
+  let start = 0; // sanity check to remove black frames
   for (const item of items) {
     resultItems.push(`file '${item.url}'`);
-    const duration = Math.round((item.end - item.start) * 100) / 100;
+    const duration = round(item.end - start);
     resultItems.push(`inpoint 0.0`);
     resultItems.push(`outpoint ${duration}`);
-
-    //const partDuration = await getDuration(item.url);
-    //console.log('partDuration', partDuration, item.start, item.end, item.url);
-    //items.push(`inpoint ${item.startTime}`);
-    //items.push(`outpoint ${item.endTime}`);
+    totalDuration = round(totalDuration + duration);
+    start = item.end;
   }
   const filelistContent = resultItems.join('\n');
   // Write the file list to a text file
   fs.writeFileSync(fileListPath, filelistContent);
+
   return fileListPath;
 }

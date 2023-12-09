@@ -4,6 +4,7 @@ import { outputDir } from './utils';
 import { ffmpeg_run } from './ffmpeg';
 import * as path from 'path';
 import { generateFilesForList, writeFilelist } from './generateFilelist';
+import { getDuration } from './getDuration';
 
 export async function mergeStreamsWithFilelist(
   audioName: string,
@@ -22,8 +23,7 @@ export async function mergeStreamsWithFilelist(
     const audioFilePath = audioName;
 
     console.log("Merging streams with filelist");
-    console.log(fs.readFileSync(fileListPath).toString());
-    //process.exit(0);
+
     const subtitlesArgs = subsFile ? [`-vf`, `ass=${subsFile}`] : [];
     const args = [
       '-loglevel',
@@ -56,8 +56,7 @@ export async function mergeStreamsWithFilelist(
     ];
 
     console.log('ffmpegProcess starting. output file: ', fileFullPath);
-    console.log(await ffmpeg_run(args));
-
+    await ffmpeg_run(args);
 
     return fileFullPath;
 

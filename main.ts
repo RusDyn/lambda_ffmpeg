@@ -70,14 +70,17 @@ export const handler = async event => {
     throw new Error('Error in function while merging streams: ' + e.message);
   }
 
-  console.log('Uploading finished file to S3 from', outName)
+  //console.log('Uploading finished file to S3 from', outName)
   const randomName = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
   const fileName = `out_${randomName}`;
+
   await uploadFile(fileName, outName)
 
   console.log('Removing temp files')
   await removeFile(subtitlesFile);
   await removeFile(audioFileName);
+
+  //await removeFile(outName);
 
 
   //await addHashForNewFile(path.join(outputDir, 'out.mp4'), sourceLocation.key);
