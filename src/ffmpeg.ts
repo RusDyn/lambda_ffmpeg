@@ -1,24 +1,24 @@
 
-import {FFMPEG_ARGS, execFileAsync, getFFmpegPath, outputDir} from './utils'
+import { FFMPEG_ARGS, execFileAsync, getFFmpegPath, outputDir } from './utils'
 
-export async function ffmpeg_run(args: string[]){
-    
-    const opts = {cwd: outputDir}
+export async function ffmpeg_run(args: string[]) {
 
-    try {
-      const result = await execFileAsync(getFFmpegPath(), args, opts);
-      //console.log(result);
-      //process.exit(7);
-    
+  const opts = { cwd: outputDir }
+
+  try {
+    const result = await execFileAsync(getFFmpegPath(), args, opts);
+    //console.log(result);
+    //process.exit(7);
+
+  }
+  catch (err) {
+    console.log(err);
+    if (err.stderr) {
+      console.log('FFmpeg Error: --------------------------');
+      console.error(err.stderr); // Log FFmpeg's stderr for error details
     }
-    catch (err) {
-        console.log(err);
-        if (err.stderr) {
-          console.log('FFmpeg Error: --------------------------');
-          console.error(err.stderr); // Log FFmpeg's stderr for error details
-        }
-        process.exit(1);
-    }
+    throw err;
+  }
 }
 
 /**
@@ -28,19 +28,18 @@ export async function ffmpeg_run(args: string[]){
  * @returns {Promise}
  */
 export async function ffmpeg(keyPrefix: string): Promise<void> {
-    console.log('Starting FFmpeg');
-  
-    const args = [
-        '-y',
-        '-loglevel',
-        'warning',
-        '-i',
-        '../download',
-        ...FFMPEG_ARGS.replace('$KEY_PREFIX', keyPrefix).split(' '),
-      ];
+  console.log('Starting FFmpeg');
 
-    await ffmpeg_run(args)
-    
-  }
-  
-  
+  const args = [
+    '-y',
+    '-loglevel',
+    'warning',
+    '-i',
+    '../download',
+    ...FFMPEG_ARGS.replace('$KEY_PREFIX', keyPrefix).split(' '),
+  ];
+
+  await ffmpeg_run(args)
+
+}
+

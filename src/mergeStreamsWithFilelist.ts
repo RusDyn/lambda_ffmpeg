@@ -13,6 +13,15 @@ export async function mergeStreamsWithFilelist(
   duration: number = 60,
 ): Promise<string> {
   let filelist: Array<{ url, start, end }> = []
+
+  let start = 0;
+  for (let i = 0; i < videos.length; i++) {
+    const video = videos[i];
+    const { end } = video;
+    video.start = start;
+    start = end;
+  }
+
   filelist = await generateFilesForList(videos);
   console.log('filelist', filelist)
   const fileListPath = await writeFilelist(filelist);

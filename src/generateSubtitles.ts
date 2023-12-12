@@ -141,10 +141,11 @@ function convertToAss(subtitlesArray: Subtitle[], styles: SubtitleStyle[]) {
   `;
 
 
-  for (const index in styles) {
-    const style = styles[index];
+  for (let i = 0; i < styles.length; i++) {
+    const style = styles[i];
+    const i2: number = i + 1;
     const { font = 'Arial', size = 32 } = style;
-    const str = ['Item' + (index + 1), font, size, "&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,2,2,10,10,10,1"].join(',');
+    const str = [`Item${i2}`, font, size, "&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,2,2,10,10,10,1"].join(',');
     assContent += `Style: ${str}\n`;
 
   }

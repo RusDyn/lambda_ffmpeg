@@ -51,26 +51,27 @@ export async function createPartOfVideo(
   const { duration, r_frame_rate, avg_frame_rate } = streams[0];
 
   const is25fps = r_frame_rate === '25/1';
-  if (is25fps) {
-    return url;
-  }
-
-  const codecArgs = ['-r', '25', '-c:v', 'libx264', '-preset', 'fast'];
-  //const fs = formatTime(start);
-  //const fe = formatTime(end);
+  const codecArgs = (is25fps) ?
+    ['-c:v', 'copy'] :
+    //['-r', '25', '-c:v', 'libx264', '-profile:v', 'high', '-preset', 'fast'] :
+    ['-r', '25', '-time_base', '1/25000', '-c:v', 'libx264', '-profile:v', 'high', '-preset', 'fast'];
+  const fs = formatTime(start);
+  const fe = formatTime(end);
   const args2 = [
     '-loglevel', 'debug',
-    //'-accurate_seek',
-    //'-ss', fs,
-    //'-to', fe,
+    '-accurate_seek',
+    '-ss', fs,
+    '-to', fe,
     '-i',
     url,
     ...codecArgs,
     '-an',
-    //'-force_key_frames', `${fs},${fe}`,
+    '-force_key_frames', `${fs},${fe}`,
     randomFileName2,
     '-y',
   ];
+
+
   await ffmpeg_run(args2);
   return randomFileName2;
 }

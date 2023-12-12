@@ -9,7 +9,7 @@ import { uploadFile } from './src/uploadFIle'
 import { generateSubtitles } from './src/generateSubtitles'
 import { mergeStreams } from './src/mergeStreams'
 import { mergeStreamsWithFilelist } from './src/mergeStreamsWithFilelist'
-
+import { mergeAudio } from './src/mergeAudio'
 /**
  * The Lambda Function handler
  */
@@ -18,9 +18,10 @@ export const handler = async event => {
 
   //await ffmpeg_run(['-version']);
 
-  const { words, audio, videos, video, styles = [{ font: "Arial", size: 32 }], duration = 150 } = event as {
+  const { words, audios, videos, video, duration = 150 } = event as {
     words: Array<{ word, start, end }>,
-    audio: { bucket: string, name: string },
+    //    audio: { bucket: string, name: string },
+    audios?: Array<{ url, start, end }>,
     videos?: Array<{ url, start, end }>,
     video?: { bucket: string, name: string },
     duration?: number,
@@ -28,10 +29,14 @@ export const handler = async event => {
     height?: number,
     styles: Array<{ size?: number, font?: string }>
   };
+  let styles = event.styles as Array<{ font: string, size: number }>;
+  if (!styles || styles.length === 0) {
+    styles = [{ font: "Arial", size: 32 }];
+  }
   if (!words || words.length === 0) {
     throw new Error('No words is provided');
   }
-  if (!audio || !audio.bucket || !audio.name) {
+  if (!audios) {
     throw new Error('No audio is provided. Should be {bucket: string, name: string}');
   }
   if (event.videos) {
@@ -48,11 +53,27 @@ export const handler = async event => {
     }
   }
 
+  console.log(styles);
+
   console.log('Downloading audio')
-  const audioFileName = await downloadFile(audio.bucket, audio.name);
+
+
+  for (let i = 0; i < audios.length; i++) {
+    const audio = audios[i];
+    const { url } = audio;
+    const audioFileName = await downloadFile("", url);
+    audios[i].url = audioFileName;
+  }
 
   console.log('generateSubtitles')
   const subtitlesFile = generateSubtitles(words, duration, styles);
+  const audioFileName = await mergeAudio(audios, duration);
+
+  for (let i = 0; i < audios.length; i++) {
+    const audio = audios[i];
+    const { url } = audio;
+    await removeFile(url);
+  }
 
   let outName = "";
   try {
@@ -89,9 +110,9 @@ export const handler = async event => {
   /*
   const sourceLocation = getFileLocation(event);
   const keyPrefix = sourceLocation.key.replace(/\.[^/.]+$/, '');
-
+ 
   const s3Record = event.Records[0].s3;
-
+ 
   const name = await downloadFile(s3Record.bucket.name, s3Record.object.key);
   checkM3u(name);
   await ffprobe();
