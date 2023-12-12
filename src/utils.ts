@@ -1,8 +1,8 @@
-import {S3} from '@aws-sdk/client-s3';
-import {DynamoDBClient} from '@aws-sdk/client-dynamodb';
+import { S3 } from '@aws-sdk/client-s3';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import * as os from 'os';
 import * as fs from 'fs';
-import {S3Event} from 'aws-lambda';
+import { S3Event } from 'aws-lambda';
 import path = require('path');
 import { Readable } from 'stream';
 import axios from 'axios';
@@ -15,38 +15,38 @@ export const execAsync = util.promisify(exec);
 export const execFileAsync = util.promisify(execFile);
 
 type env = {
-    PROCESSED_BUCKET: string;
-    FFMPEG_ARGS: string;
-    MIME_TYPES: string;
-    VIDEO_MAX_DURATION: string;
-    ENDPOINT_URL?: string;
-    HASHES_TABLE: string;
-  };
-  
-  export const {
-    PROCESSED_BUCKET,
-    FFMPEG_ARGS = "-c:a copy -vf scale='min(320\\,iw):-2' -movflags +faststart out.mp4 -vf thumbnail -vf scale='min(320\\,iw):-2' -vframes 1 out.png",
-    MIME_TYPES = '{"png":"image/png","mp4":"video/mp4"}',
-    VIDEO_MAX_DURATION = '120',
-    ENDPOINT_URL,
-    HASHES_TABLE,
-  } = process.env as env;
-  
-  if (!PROCESSED_BUCKET) {
-    throw new Error('PROCESSED_BUCKET is not defined');
-  }
-  const opts = ENDPOINT_URL ? {endpoint: ENDPOINT_URL} : {};
-  
-  export const s3 = new S3(opts);
-  export const docClient = new DynamoDBClient({});
-  
-  export const tempDir = os.tmpdir();
-  export const download = path.join(tempDir, 'download');
-  console.log('Download dir:', download);
-  const currentPath = process.cwd();
+  PROCESSED_BUCKET: string;
+  FFMPEG_ARGS: string;
+  MIME_TYPES: string;
+  VIDEO_MAX_DURATION: string;
+  ENDPOINT_URL?: string;
+  HASHES_TABLE: string;
+};
+
+export const {
+  PROCESSED_BUCKET,
+  FFMPEG_ARGS = "-c:a copy -vf scale='min(320\\,iw):-2' -movflags +faststart out.mp4 -vf thumbnail -vf scale='min(320\\,iw):-2' -vframes 1 out.png",
+  MIME_TYPES = '{"png":"image/png","mp4":"video/mp4"}',
+  VIDEO_MAX_DURATION = '120',
+  ENDPOINT_URL,
+  HASHES_TABLE,
+} = process.env as env;
+
+if (!PROCESSED_BUCKET) {
+  throw new Error('PROCESSED_BUCKET is not defined');
+}
+const opts = ENDPOINT_URL ? { endpoint: ENDPOINT_URL } : {};
+
+export const s3 = new S3(opts);
+export const docClient = new DynamoDBClient({});
+
+export const tempDir = os.tmpdir();
+export const download = path.join(tempDir, 'download');
+console.log('Download dir:', download);
+export const currentPath = process.cwd();
 console.log("Current working directory:", currentPath);
 
-  export const outputDir = path.join(tempDir, 'outputs');
+export const outputDir = path.join(tempDir, 'outputs');
 
 if (!fs.existsSync(outputDir)) {
   fs.mkdirSync(outputDir);
@@ -95,10 +95,10 @@ export function checkM3u(file: string) {
 export function getFileLocation({
   Records: [
     {
-      s3: {bucket, object},
+      s3: { bucket, object },
     },
   ],
-}: S3Event): {bucket: string; key: string} {
+}: S3Event): { bucket: string; key: string } {
   return {
     bucket: bucket.name,
     key: decodeURIComponent(object.key).replace(/\+/g, ' '),
@@ -146,4 +146,3 @@ export function streamToBuffer(stream: Readable): Promise<Buffer> {
     stream.on('error', reject);
   });
 }
-  
