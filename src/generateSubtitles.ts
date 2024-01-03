@@ -13,6 +13,7 @@ export interface WordTime {
 export interface SubtitleStyle {
   size?: number;
   font?: string;
+  alignment?: number;
 }
 
 export interface SubtitleItem {
@@ -27,7 +28,7 @@ export interface Subtitle {
   style?: number;
 }
 
-export function generateSubtitles(baseWords: WordTime[], maxStart: number, styles: SubtitleStyle[]) {
+export function generateSubtitles(baseWords: WordTime[], maxStart: number, styles: SubtitleStyle[], spokenColor: string, spokenAlpha: number, currentWordColor: string) {
   const subtitles: Subtitle[] = [];
   const maxLength = 50;
   const baseLength = 10;
@@ -35,12 +36,18 @@ export function generateSubtitles(baseWords: WordTime[], maxStart: number, style
   let phrase = '';
   let start = 0;
   const wordsArray: WordTime[][] = [];
+  let startTime = 0;
   for (let i = 0; i < baseWords.length; i += 1) {
     if (phrase !== '') {
       phrase += ' ';
     }
     phrase += baseWords[i].word;
-    if (
+    if (baseWords[i].start > startTime + 1) {
+      wordsArray.push(baseWords.slice(start, i));
+      start = i;
+      phrase = baseWords[i].word;
+    }
+    else if (
       phrase.length > baseLength &&
       ['.', ',', '!', '?'].includes(phrase[phrase.length - 1])
     ) {
@@ -53,11 +60,13 @@ export function generateSubtitles(baseWords: WordTime[], maxStart: number, style
       start = i + 1;
       phrase = '';
     }
+    startTime = baseWords[i].end;
   }
 
   if (phrase !== '') {
     wordsArray.push(baseWords.slice(start));
   }
+
   for (const words of wordsArray) {
     // Iterate through each word
     const words2: WordTime[] = [];
@@ -93,13 +102,13 @@ export function generateSubtitles(baseWords: WordTime[], maxStart: number, style
       // Encapsulate each spoken word with an RGBA color tag, to make it slightly transparent
       const spokenWords = words2.slice(0, i);
       if (spokenWords.length > 0) {
-        text += `{\\c&HFFFFFF&}{\\1a&H60&}${spokenWords
+        text += `{\\c&H${spokenColor}&}{\\1a&H${spokenAlpha}&}${spokenWords
           .map((word) => word.word)
           .join(' ')}{\\c}{\\1a} `;
       }
 
       // Encapsulate the current spoken word with a color tag to make it fully white
-      text += `{\\c&HFFFFFF&}${word.word}{\\c}`;
+      text += `{\\c&H${currentWordColor}&}${word.word}{\\c}`;
 
       // Add the words that have not yet been spoken. As the default 'fillColor' is null,
       // the text will be invisible, but reserve its space in the text element
@@ -144,8 +153,8 @@ function convertToAss(subtitlesArray: Subtitle[], styles: SubtitleStyle[]) {
   for (let i = 0; i < styles.length; i++) {
     const style = styles[i];
     const i2: number = i + 1;
-    const { font = 'Arial', size = 32 } = style;
-    const str = [`Item${i2}`, font, size, "&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,2,2,10,10,10,1"].join(',');
+    const { font = 'Arial', size = 32, alignment = 10 } = style;
+    const str = [`Item${i2}`, font, size, `&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,2,${alignment},10,10,10,1`].join(',');
     assContent += `Style: ${str}\n`;
 
   }

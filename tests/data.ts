@@ -42,7 +42,7 @@ const words = [
     {
         "word": "It's",
         "start": 1.4,
-        "end": 3
+        "end": 1.9
     },
     {
         "word": "more",
@@ -181,7 +181,7 @@ const videos = [
 ];
 
 const audioUrl = 'https://s3.eu-north-1.amazonaws.com/yfactory-public/audio_40.mp3';
-const audios = [{
+const audios2 = [{
     url: audioUrl,
     start: 0,
     end: 1
@@ -201,6 +201,14 @@ const audios = [{
     start: 6,
     end: 7
 }];
+const audios = [
+    {
+        "url": "https://s3.eu-north-1.amazonaws.com/yfactory-public/audio_51.mp3"
+    },
+    {
+        "url": "https://s3.eu-north-1.amazonaws.com/yfactory-public/audio_51.mp3"
+    }
+];
 
 const styles = [{ font: 'Arial', size: 32 }];
 

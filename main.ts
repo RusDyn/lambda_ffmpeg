@@ -18,7 +18,11 @@ export const handler = async event => {
 
   //await ffmpeg_run(['-version']);
 
-  const { words, audios, videos, video, duration = 150 } = event as {
+  const { words, audios, videos, video, duration = 150, textColor = {
+    spokenColor: 'FFFFFF',
+    spokenAlpha: 60,
+    currentColor: 'FFFFFF',
+  } } = event as {
     words: Array<{ word, start, end }>,
     //    audio: { bucket: string, name: string },
     audios?: Array<{ url, start, end }>,
@@ -28,6 +32,11 @@ export const handler = async event => {
     width?: number,
     height?: number,
     styles: Array<{ size?: number, font?: string }>
+    textColor?: {
+      spokenColor: string,
+      spokenAlpha: number,
+      currentColor: string,
+    },
   };
   let styles = event.styles as Array<{ font: string, size: number }>;
   if (!styles || styles.length === 0) {
@@ -66,7 +75,9 @@ export const handler = async event => {
   }
 
   console.log('generateSubtitles')
-  const subtitlesFile = generateSubtitles(words, duration, styles);
+  const { spokenColor, spokenAlpha, currentColor } = textColor;
+
+  const subtitlesFile = generateSubtitles(words, duration, styles, spokenColor, spokenAlpha, currentColor);
   const audioFileName = await mergeAudio(audios, duration);
 
   for (let i = 0; i < audios.length; i++) {

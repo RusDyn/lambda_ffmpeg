@@ -6,8 +6,8 @@ import * as path from 'path';
 
 export interface Audio {
     url: string;
-    start: number;
-    end: number;
+    start?: number;
+    end?: number;
 }
 function createFFmpegArgs(audios: Audio[], outputFile: string, maxDuration: number): string[] {
     let args: string[] = [
@@ -24,7 +24,7 @@ function createFFmpegArgs(audios: Audio[], outputFile: string, maxDuration: numb
 
     // Construct filter_complex for trimming and delaying each audio
     let filterComplexInputs = audios.map((audio, index) => {
-        const delay = audio.start * 1000; // Delay in milliseconds
+        const delay = (audio.start || 0) * 1000; // Delay in milliseconds
         const start = 0;
         const end = (audio.end || maxDuration) - (audio.start || 0);
         return `[${index}:a]atrim=start=${start}:end=${end},adelay=${delay}|${delay}[aud${index}];`;
@@ -45,7 +45,7 @@ function createFFmpegArgs(audios: Audio[], outputFile: string, maxDuration: numb
     return args;
 }
 
-export async function mergeAudio(audios: Array<{ url, start, end }>, outputFileDuration: number, fileFullPath?: string): Promise<string> {
+export async function mergeAudio(audios: Audio[], outputFileDuration: number, fileFullPath?: string): Promise<string> {
     if (!fileFullPath) {
         const randomName = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
         fileFullPath = path.join(outputDir, `out_${randomName}.mp3`);
